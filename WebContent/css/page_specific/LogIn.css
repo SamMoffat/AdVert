@@ -1,0 +1,15 @@
+input[type=submit] {
+    padding               : 5px 15px; 
+    background            : #43d236; 
+    border                : 0 none;
+    cursor                : pointer;
+    -webkit-border-radius : 5px;
+    border-radius         : 5px; 
+}
+input:hover[type=submit] { 
+    background-color : #319e27; 
+}
+input:focus[type=submit] {
+    background-color : #ffffff;
+    border-radius : 100px; 
+}

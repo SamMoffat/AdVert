@@ -1,0 +1,233 @@
+  <!--Navbar contains all imported -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"></link>
+<link rel="stylesheet" type="text/css" href="css/General.css"></link>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
+<script type="text/javascript" src="js/httpRequests.js"></script>
+
+<script type="text/javascript">
+var loginRes;
+var nameIdRes;
+var id;
+  FB.init({
+    appId      : '277582446020416',
+    xfbml      : true,
+    cookie     : true,
+    version    : 'v2.8'
+  });
+
+  FB.getLoginStatus(function(response) {
+    console.log("TEST GLS    " + JSON.stringify(response.authResponse));
+    loginRes = response;
+	checkUserID(response, true);
+  }); 
+
+  function login() {
+    FB.login(function(response) {
+      console.log("TEST LOG   " + JSON.stringify(response.authResponse));
+    	checkUserID(response, false);	
+    });
+  }
+  
+  function logout() {
+    FB.logout(function(response) {
+		  window.location.replace('LogIn.html');
+   	});
+  }
+
+  function checkUserID(theResponse, fromRedir) {
+    console.log("RESPONSE TEST HERE    " + theResponse);
+    if (theResponse.status === 'connected') {
+      FB.api('/me', function(apiResponse) {
+    	nameIdRes = apiResponse;
+    	id = apiResponse.id;
+    	console.log(apiResponse.id);
+      	console.log(JSON.stringify(theResponse));
+      	if (document.getElementById("getName")) {
+      		document.getElementById("getName").innerHTML += apiResponse.name;
+      	}
+        httpPOSTAsyncWToken("rest/LogIn?userID=" + apiResponse.id, theResponse.authResponse.accessToken, function(theCallBack) {
+        //httpPOSTAsync("rest/LogIn?userID=1324385480942835&token=111111", function(theCallBack) { //switch between these to use Offline
+          console.log(theCallBack);
+          var parseJSON = JSON.parse(theCallBack);
+          console.log(parseJSON.data);
+          document.getElementById('login').innerHTML = " " + apiResponse.name;
+          var destination;
+          if (parseJSON.data === "Success")       { destination = 'FrontPage.html'}
+          else if (parseJSON.data === "Failure")  { destination = 'SignUp.html'   }
+          else                                    { destination = 'OffLine.html'  }
+          if ("/Ad-Vert/" + destination !== window.location.pathname) { //stop redirection loop
+            window.location.replace(destination);
+          }
+        });  
+      });
+    }
+  }
+
+  function loginNavShow() {
+    document.getElementById('login_only_invites').style.visibility = 'visible';
+    document.getElementById('login_only_area').style.visibility = 'visible';
+    document.getElementById('login_only_matches').style.visibility = 'visible';
+    document.getElementById('login_only_settings').style.visibility = 'visible';
+    document.getElementById('login_only_logout').style.visibility = 'visible';
+    document.getElementById('logout_only_signup').style.visibility = 'hidden';
+  } 
+
+  function logoutNavShow() {
+    document.getElementById('login_only_invites').style.visibility = 'hidden';
+    document.getElementById('login_only_area').style.visibility = 'hidden';
+    document.getElementById('login_only_matches').style.visibility = 'hidden';
+    document.getElementById('login_only_settings').style.visibility = 'hidden';
+    document.getElementById('login_only_logout').style.visibility = 'hidden';
+    document.getElementById('logout_only_signup').style.visibility = 'visible';
+  }
+
+  $(document).ready(function(){
+    $('[data-toggle="tooltip-bottom"]').tooltip({
+      placement : 'bottom'
+    });
+    $('[data-toggle="tooltip-top"]').tooltip({
+      placement : 'top'
+    });
+  });
+  
+</script>
+
+<div class="navbar_id">
+	<nav class="navbar navbar-inverse navbar-top">
+		<div class="container-fluid">
+	    <div class="navbar-header">
+	      <a class="navbar-brand gradient-texts" href="#"><b>AdVert</b></a>
+	    </div>
+	    <ul class="nav navbar-nav">
+	     	<li class="active"><a href="#"><span class="glyphicon glyphicon-home" data-toggle="tooltip-bottom" data-original-title="Home"></span></a></li>
+	      <li id="login_only_invites"><a href="#"><span class="glyphicon glyphicon-envelope" data-toggle="tooltip-bottom" data-original-title="Invites"></span></a></li>
+	      <li id="login_only_area"><a href="#"><span class="glyphicon glyphicon-map-marker" data-toggle="tooltip-bottom" data-original-title="Area Search"></span></a></li>
+	      <li id="login_only_matches"><a href="#"><span class="glyphicon glyphicon-tasks" data-toggle="tooltip-bottom" data-original-title="Your Matches"></span></a></li>
+	    </ul>
+	    <ul class="nav navbar-nav navbar-right">
+        <li id="logout_only_signup"><a onclick="login()"><span class="glyphicon glyphicon-user" data-toggle="tooltip-bottom" data-original-title="Sign Up"></span></a></li>
+        <li id="login_only_settings"><a href="#" id="login_only"><span id="login_only" class="glyphicon glyphicon-cog" data-toggle="tooltip-bottom" data-original-title="Settings"></span></a></li>
+        <li><a onclick="login()"><span class="glyphicon glyphicon-log-in" data-toggle="tooltip-bottom" data-original-title="Log in"></span><span id="login"></span></a></li>
+      </ul>
+	  </div>
+	</nav>
+</div>
+<div class="footer_id">
+	<nav class="navbar-fixed-bottom">
+		<div class="container-fluid">
+	    <ul class="nav navbar-nav navbar-right navbar-button">
+	      <li id="login_only_logout"><a onclick="logout()"><span class="glyphicon glyphicon-log-out" data-toggle="tooltip-top" data-original-title="log out"></span></a></li>
+	    </ul>
+	  </div>
+	</nav>
+</div>
+
+<div class="joblist_checkboxes_looking">
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="checkbox" id="check1">
+        <label><input type="checkbox" value="" onclick="ping(0, 0)">Painting (interior)</label>
+      </div>
+      <div class="checkbox" id="check2">
+        <label><input type="checkbox" value="" onclick="ping(1, 0)">Gardening (flowers)</label>
+      </div>
+      <div class="checkbox" id="check3">
+        <label><input type="checkbox" value="" onclick="ping(2, 0)">Piano lessons</label>
+      </div>
+      <div class="checkbox" id="check4">
+        <label><input type="checkbox" value="" onclick="ping(3, 0)">Trumpet lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check5">
+        <label><input type="checkbox" value="" onclick="ping(4, 0)">Painting (exterior)</label>
+      </div>
+      <div class="checkbox" id="check6">
+        <label><input type="checkbox" value="" onclick="ping(5, 0)">Gardening (trimming)</label>
+      </div>
+      <div class="checkbox" id="check7">
+        <label><input type="checkbox" value="" onclick="ping(6, 0)">Drumming lessons</label>
+      </div>
+      <div class="checkbox" id="check8">
+        <label><input type="checkbox" value="" onclick="ping(7, 0)">Flute lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check9">
+        <label><input type="checkbox" value="" onclick="ping(8, 0)">Gardening (mowing)</label>
+      </div>
+      <div class="checkbox" id="check10">
+        <label><input type="checkbox" value="" onclick="ping(9, 0)">Guitar lessons</label>
+      </div>
+      <div class="checkbox" id="check11">
+        <label><input type="checkbox" value="" onclick="ping(10, 0)">Saxophone lessons</label>
+      </div>
+      <div class="checkbox" id="check12">
+        <label><input type="checkbox" value="" onclick="ping(11, 0)">DIY jobs</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="joblist_checkboxes_offering">
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="checkbox" id="check1">
+        <label><input type="checkbox" value="" onclick="ping(0, 1)">Painting (interior)</label>
+      </div>
+      <div class="checkbox" id="check2">
+        <label><input type="checkbox" value="" onclick="ping(1, 1)">Gardening (flowers)</label>
+      </div>
+      <div class="checkbox" id="check3">
+        <label><input type="checkbox" value="" onclick="ping(2, 1)">Piano lessons</label>
+      </div>
+      <div class="checkbox" id="check4">
+        <label><input type="checkbox" value="" onclick="ping(3, 1)">Trumpet lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check5">
+        <label><input type="checkbox" value="" onclick="ping(4, 1)">Painting (exterior)</label>
+      </div>
+      <div class="checkbox" id="check6">
+        <label><input type="checkbox" value="" onclick="ping(5, 1)">Gardening (trimming)</label>
+      </div>
+      <div class="checkbox" id="check7">
+        <label><input type="checkbox" value="" onclick="ping(6, 1)">Drumming lessons</label>
+      </div>
+      <div class="checkbox" id="check8">
+        <label><input type="checkbox" value="" onclick="ping(7, 1)">Flute lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check9">
+        <label><input type="checkbox" value="" onclick="ping(8, 1)">Gardening (mowing)</label>
+      </div>
+      <div class="checkbox" id="check10">
+        <label><input type="checkbox" value="" onclick="ping(9, 1)">Guitar lessons</label>
+      </div>
+      <div class="checkbox" id="check11">
+        <label><input type="checkbox" value="" onclick="ping(10, 1)">Saxophone lessons</label>
+      </div>
+      <div class="checkbox" id="check12">
+        <label><input type="checkbox" value="" onclick="ping(11, 1)">DIY jobs</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script to do attach elements from navbar import, contained here because of it's use on all pages-->
+<script type="text/javascript">
+  var content = document.querySelector('link[rel="import"]').import;
+  var el = content.querySelector('.navbar_id');
+  var navbarHeader = document.getElementById("navbar_header");
+  navbarHeader.insertBefore( el.cloneNode(true), navbarHeader.childNodes[0] );
+
+  var content = document.querySelector('link[rel="import"]').import;
+  var el = content.querySelector('.footer_id');
+  document.body.appendChild(el.cloneNode(true));
+ 
+</script>
