@@ -42,7 +42,12 @@ public class GetMatches extends DatabaseConnect {
 	}
 	
 	@GET
-	public String getRequest(@HeaderParam("authorization") String token, @PathParam("userid") String id) {
+	public String getRequest(@HeaderParam("authorization") String token, 
+							 @PathParam("userid") String id, 
+							 @QueryParam("dis") int displace,
+							 @QueryParam("lmt") int limit, 
+							 @QueryParam("sort") String sort) {
+		
 		Connection conn = null;
 		Advert userAd = new Advert();
 		List<AdvertWeights> ads = new ArrayList<>();
@@ -61,9 +66,9 @@ public class GetMatches extends DatabaseConnect {
 										+ "FROM lists, adverts, users "
 										+ "WHERE users.area_id = %s "
 										+ "AND users.advert_id = adverts.advert_id "
-										+ "AND adverts.looking_list_id = lists.list_id "
-										+ "AND users.name <> \"%s\";",
-										rs.getString("area_id"), rs.getString("name"));
+										+ "AND adverts.looking_list_id = lists.list_id ",
+										//+ "AND users.name <> \"%s\";",
+										rs.getString("area_id"));// rs.getString("name"));
 			ResultSet rsAds = st.executeQuery(sqlAds);
 			while (rsAds.next()) {
 				ads.add(getAd(rsAds.getString("user_id"),   rsAds.getString("name"), rsAds.getInt("date"), rsAds.getDouble("longitude"),
@@ -85,19 +90,33 @@ public class GetMatches extends DatabaseConnect {
 			}
 			
 			Gson ret = new Gson();
-			Collections.sort(ads, new WeightingComparitor());
+			if (sort == null) {
+				Collections.sort(ads, new WeightingComparitor());
+			} else if (sort.equals("date")) {
+				Collections.sort(ads, new DateComparitor());
+			} else if (sort.equals("distance")) {
+				Collections.sort(ads, new DistanceComparitor());
+			} else {
+				Collections.sort(ads, new WeightingComparitor());
+			}
+			
+			limit += displace;
+			if (limit == 0 && ads.size()>=25) 	{ limit = 25; } 
+			else if ( limit == 0 || limit > ads.size()) 	{ limit = ads.size(); }
+			if (displace > ads.size()) 			{ displace = ads.size(); }
 			String fnlRet = "[";
-			for (AdvertWeights i : ads) {
+			for (AdvertWeights i : ads.subList(displace, limit)) {
 				fnlRet += ret.toJson(i, AdvertWeights.class) + ",";
 			}
 			fnlRet = fnlRet.substring(0, fnlRet.length()-1);
 			fnlRet +="]";
 			return fnlRet;
+			
 		} catch (Exception e) { e.printStackTrace(); }
 		finally {
 			try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 		}
-		return null;
+		return "{\"error\" : \"The query was unsuccessful, is the request correct?\"}";
 	}
 	private double calcMiles(double lon1, double lat1, double lon2, double lat2) {
 		double lat1Rad = Math.toRadians(lat1);
@@ -141,6 +160,7 @@ public class GetMatches extends DatabaseConnect {
 				AdvertList lookLs = new AdvertList();
 				
 				adRet.setName		(rs.getString("name"));
+				adRet.setId			(rs.getString("user_id"));
 				adRet.setDate		(rs.getInt("date"));
 				adRet.setLongitude	(rs.getDouble("longitude"));
 				adRet.setLatitude	(rs.getDouble("latitude"));
@@ -199,6 +219,7 @@ public class GetMatches extends DatabaseConnect {
 				AdvertList lookLs = new AdvertList();
 			
 			adRet.setName		(name);
+			adRet.setId			(id);
 			adRet.setDate		(date);
 			adRet.setLongitude	(longitude);
 			adRet.setLatitude	(latitude);

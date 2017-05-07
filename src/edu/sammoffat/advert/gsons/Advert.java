@@ -8,6 +8,9 @@ public class Advert {
 @SerializedName("name")
 @Expose
 private String name;
+@SerializedName("id")
+@Expose
+private String id;
 @SerializedName("date")
 @Expose
 private long date;
@@ -30,6 +33,14 @@ return name;
 
 public void setName(String name) {
 this.name = name;
+}
+
+public String getId() {
+	return id;
+}
+
+public void setId(String id) {
+	this.id = id;
 }
 
 public long getDate() {

@@ -39,7 +39,6 @@ body {
 .rounded {
 	border-radius : 5px;
 }
-
 .gradient-texts {
 color 					        : #80ff00;
   background 				      : -webkit-linear-gradient(#80ff00, #fea85a);
@@ -70,6 +69,19 @@ color 					        : #80ff00;
   margin: auto;
 }
 
+#more_button {
+	float:right; 
+	background-color:#eee;
+	border-color: #aaa"
+}
+#map {
+	height: 200px;
+    width: 100%;
+}
+.not_accessible {
+    visibility: hidden;
+    font-size:1px;
+}
 h1, h2, h3, h4, h5, h6 {
 	text-align: left;
 }

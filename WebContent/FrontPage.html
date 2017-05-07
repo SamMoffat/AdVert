@@ -6,8 +6,9 @@
     <title>Advert Front Page</title>
     <link rel="import" href="Navbar.html"></link>
     <link rel="stylesheet" type="text/css" href="css/page_specific/FrontPage.css"></link>
+    <script async defer type="text/javascript" src="js/geolocation.js"></script>
   </head>
-  <body onload="fillAd(); fillMatches(); fillInvs(); fillGeo();">
+  <body onload="fillAd(); fillMatches(); fillInvs();">
   	<div id="navbar_header"></div>
     <div class="container-fluid">
 	    <div class="row">
@@ -17,14 +18,18 @@
 	      <div class="col-sm-10 col-lg-10 col-center rounded">
 	      <img src="img/advertlogo.png" class="img-rounded" alt="Ad-vert.png" style="display:block; margin: auto">
 	      	<h1 id="getName" style="padding-bottom : 2%">Hello, </h1>
+	      	<p id="geolocation_show_id_lat" class="not_accessible"></p>
+	      	<p id="geolocation_show_id_lon" class="not_accessible"></p>
 	      	<div class="container-fluid">
 	      		<div class="col-sm-6 col-md-6 col-lg-6 col-widget rounded">
 	      			<div class="panel panel-default">
   						<div class="panel-header"><h2>Your Advert</h2></div>
   						<div class="panel-body">
-  							<ul id="looking_id"><h4 id="looking_id">You are looking for:</h4></ul>
-  							<ul id="offering_id"><h4>You can offer others:</h4></ul>
-  							<button onclick="editAd()" type="button" class="btn btn-default" style="float:right">Edit Advert</button>
+  							You are looking for:
+  							<ul id="looking_id"></ul>
+  							You can offer others:
+  							<ul id="offering_id"></ul>
+  							<button onclick="editAd()" type="button" class="btn btn-default" id="more_button">Edit Advert</button>
   						</div>
 					</div>
 	      		</div>
@@ -33,11 +38,9 @@
   						<div class="panel-header"><h2>Potential Matches</h2></div>
   						<div class="panel-body">
   							<h4>Your top 3 matches: </h4>
-  							<br>
-  							<br>
-  							<br>
-  							<br>
-  							<button type="button" class="btn btn-default" style="float:right">More matches</button>
+  							<div class="container-fluid" id="matches_id">
+  							</div>
+  							<button type="button" class="btn btn-default" id="more_button">More matches</button>
   						</div>
 					</div>
 	      		</div>
@@ -46,7 +49,7 @@
 	      				<div class="panel-header"><h2 class="panel-header-title">Invitation</h2></div>
   						<div class="panel-body">
   							<h4>Invitations: </h4>
-  							<button type="button" class="btn btn-default" style="float:right">More Invites</button>
+  							<button type="button" class="btn btn-default" id="more_button">More Invites</button>
   						</div>
 					</div>
 	      		</div>
@@ -54,8 +57,9 @@
 	      			<div class="panel panel-default">
   						<div class="panel-header"><h2 class="panel-header-title">Local Area</h2></div>
   						<div class="panel-body">
-  						<h4>People in Your Area:</h4>
-  							<button onclick="addName()" type="button" class="btn btn-default" style="float:right">Enlarge Map</button>
+  							<h4>People in Your Area:</h4>
+  							<div id="map"></div>
+  							<button onclick="addName()" type="button" class="btn btn-default" id="more_button">Enlarge Map</button>
   						</div>
 					</div>
 	      		</div>
@@ -66,7 +70,32 @@
 	    </div>
 	    <br></br>
     </div>
-      	<script type="text/javascript">
+    <div class="modal fade" id="myModal" role="dialog">
+    	<div class="modal-dialog">
+      	<div class="modal-content">
+        	<div class="modal-header">
+          		<button type="button" class="close" data-dismiss="modal">&times;</button>
+          		<h4 class="modal-title">Invitation</h4>
+        	</div>
+        	<div class="modal-body">
+        		<p>Please add a comment in your invitation, include a method of communication to discuss meeting up!</p>
+        		<div class="form-group">
+  					<label for="comment">Extra Notes:</label>
+					<textarea class="form-control" rows="5" id="invitation_comment"></textarea>
+				</div>
+				<div onclick="sendInv()" class="btn-block pull-right" style="padding-bottom:15px">
+        			<a href="#" class="btn btn-primary pull-right" id="send_inv_button">Send</a>
+	      		</div>
+        	</div>
+        	<div class="modal-footer">
+          		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        	</div>
+		</div>
+      
+    </div>
+  </div>
+    <script type="text/javascript">
+      	var invId;
       	var curId;
       	var curName;
         FB.init({
@@ -81,13 +110,9 @@
 		function fillAd() {
 	        FB.getLoginStatus(function(response) {
 	            FB.api("/me", function(theRes) {
-	            	console.log("ITS HERE   " + JSON.stringify(theRes));
-	            	console.log("ITS ID     " + theRes.id);
-	            	console.log("ITS NAME   " + theRes.name);
 	            	curId = theRes.id;
 	            	curName = theRes.name;
 	            	httpGETAsync("rest/adverts/myadvert/"+curId, function(res) {
-	    	  			console.log("POOSER      "+JSON.stringify(res));
 	    	  			var j = JSON.parse(res);
 	    	  			for (var i=0; i<j.look.length; i++) {
 	    	  				var a = document.createElement("li");
@@ -104,14 +129,162 @@
 	        }); 
 		}
 		function fillMatches() {
-				
+			FB.getLoginStatus(function(response) {
+				FB.api("/me", function(theRes) {
+					httpGETAsync("rest/adverts/myadvert/"+theRes.id+"/matches?lmt=2", function(res) {
+						var j = JSON.parse(res);
+						console.log("curTEST (j.length) = " + j.length);
+						for (var i=0; i<j.length; i++) {
+							var p = document.createElement("p");
+							var br = document.createElement("br");
+							var img = document.createElement("img");
+							var a = document.createElement("div");
+							var b = document.createElement("div");
+							var bLook = document.createElement("li");
+							var bOffer = document.createElement("li");
+							var container = document.createElement("div");
+							var invBtn = document.createElement("button");
+							container.className = "container-fluid rounded";
+							img.setAttribute("src", "https://graph.facebook.com/"+j[i].id+"/picture?type=large");
+							img.setAttribute("width", "32");
+							img.setAttribute("height", "32");
+							a.className = "col-sm-5 col-md-5 col-lg-5";
+							b.className = "col-sm-7 col-md-7 col-lg-7";
+							console.log("this is a test");
+							a.innerHTML = "name: ";
+							a.appendChild(p);
+							a.innerHTML += j[i].name;
+							a.appendChild(br);
+							a.appendChild(img);
+							a.appendChild(p);
+							a.innerHTML += j[i].weighting;
+							b.innerHTML = "looking for: ";
+							b.appendChild(createList(j[i], "looking"));
+							b.innerHTML += "Offering: ";
+							b.appendChild(createList(j[i], "offering"));
+							invBtn.innerHTML = "invite";
+							invBtn.className = "btn btn-default";
+							invBtn.setAttribute("type", "button");
+							invBtn.setAttribute("style", "padding: 0 5px 0 5px;");
+							invBtn.setAttribute("onclick", "sendInvId('"+j[i].id+"')")
+							invBtn.setAttribute("data-toggle", "modal");
+							invBtn.setAttribute("data-target","#myModal");
+							invBtn.setAttribute("id", "more_button");
+							container.appendChild(a);
+							container.appendChild(b);
+							container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+							$("#matches_id").append(container);
+							$("#matches_id").append(invBtn);
+							$("#matches_id").append(br);
+							$("#matches_id").append(p);
+						}
+					});
+				});
+			});
 		}
+		
+		function createList(j, type) {
+			var limit;
+			if (type == "looking") {
+				limit = j.look;
+			} else {
+				limit = j.offer;
+			}
+			console.log(limit);
+			var ret = document.createElement("ul");
+			for (var key in limit) {
+				if (limit.hasOwnProperty(key)) {
+					if (limit[key] == true) {
+						var a = document.createElement("li");
+						a.innerHTML = key;
+						ret.appendChild(a);
+					}
+					//console.log(key + " >>> " + limit[key]);
+				}
+			}
+			console.log(ret);
+			return ret;
+		}
+		
 		function fillInvs() {
 				
 		}
-		function fillGeo() {
-				
+		
+		function sendInv(id) {
+			var invComment = document.getElementById("invitation_comment").value;
+			console.log("BOOOOOOOOOOM");
+			if (invComment != "") {
+				FB.getLoginStatus(function(response) {
+					FB.api("/me", function(theRes) {
+						httpGETAsync("rest/adverts/otherAdverts/"+invId+"/invite?m=" + theRes.id + "&com=" + invComment, function(res) {
+							var j = JSON.parse(res);
+							if (j.data == "Success") {
+								document.getElementById("send_inv_button").innerHTML = "sent!";
+							} else if (j.data == "Database") {
+								document.getElementById("send_inv_button").innerHTML = "already sent!"
+							} else {
+								document.getElementById("send_inv_button").innerHTML = "failed to send!"
+							}
+						});
+					});
+				});	
+			} else {
+				document.getElementById("send_inv_button").innerHTML = "Please add a comment!";
+			}
+		}
+		
+		function sendInvId(sentId) {
+			invId = sentId;
+			document.getElementById("send_inv_button").innerHTML = "Send"
+			console.log(sentId);
+		}
+		
+		function initMap() {
+			console.log("lat");
+			console.log(geoLat);
+			console.log("lon");
+			console.log(geoLon);
+			var myLatLng = {lat: geoLat, lng: geoLon};
+			console.log(document.getElementById('map'));
+			var map = new google.maps.Map(document.getElementById('map'), {
+				zoom: 12,
+			    center: myLatLng
+			});
+
+			var marker = new google.maps.Marker({
+			    position: myLatLng,
+			    map: map,
+			    title: 'You are here!'
+			});
+			
+			FB.getLoginStatus(function(response) {
+	            FB.api("/me", function(fbRes) {
+	            	httpGETAsync("rest/user/"+fbRes.id+"/adverts/otheradverts/local", function(theRes) {
+	    				var j = JSON.parse(theRes);
+	    				for (var i=0; i<j.length; i++) {
+	    					console.log("BIFF");
+    						console.log(j[i].latitude);
+    						console.log(j[i].longitude);
+	    					var m = new google.maps.Marker({
+	    						position: {lat: j[i].latitude, lng: j[i].longitude},
+	    						map: map,
+	    						title: "name: " + j[i].name
+	    					});
+	    					m.setMap(map);
+	    				}
+	    			}); 	
+	            });
+			});
+			
+			marker.setMap(map);
 		}
   	</script>
+  	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAetBEZpOqWuIXkzrK6P0cH8lW9ifVEps&callback=initMap"> </script>
+  	
+	<script>
+		for(var b in window) { 
+		  if(window.hasOwnProperty(b)) console.log(b); 
+		}
+	</script>
 </body>
 </html>
