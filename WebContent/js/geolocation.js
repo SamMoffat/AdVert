@@ -17,6 +17,9 @@ function getGeolocation () {
 function storePositions(position) {
 	geoLat = position.coords.latitude;
 	geoLon = position.coords.longitude;
+	console.log("I am defined as: ");
+	console.log(geoLon);
+	console.log(geoLat);
 	if (x != null) { x.innerHTML = position.coords.latitude; }
 	if (y != null) { y.innerHTML = position.coords.latitude; }
 	if (z != null) { z.innerHTML += "{ \"latitude\" : \"" + position.coords.latitude +

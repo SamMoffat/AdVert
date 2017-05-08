@@ -4,6 +4,7 @@
   <head>
   	<meta charset="utf-8">
     <title>Advert Front Page</title>
+    <script type="text/javascript" src="js/moment.js"></script>
     <link rel="import" href="Navbar.html"></link>
     <link rel="stylesheet" type="text/css" href="css/page_specific/FrontPage.css"></link>
     <script async defer type="text/javascript" src="js/geolocation.js"></script>
@@ -37,7 +38,7 @@
 	      			<div class="panel panel-default">
   						<div class="panel-header"><h2>Potential Matches</h2></div>
   						<div class="panel-body">
-  							<h4>Your top 3 matches: </h4>
+  							<h4>Your top matches: </h4>
   							<div class="container-fluid" id="matches_id">
   							</div>
   							<button type="button" class="btn btn-default" id="more_button">More matches</button>
@@ -46,9 +47,11 @@
 	      		</div>
 	      		<div class="col-sm-6 col-md-6 col-lg-6 col-widget rounded">
 	      			<div class="panel panel-default">
-	      				<div class="panel-header"><h2 class="panel-header-title">Invitation</h2></div>
+	      				<div class="panel-header"><h2 class="panel-header-title">Invitations</h2></div>
   						<div class="panel-body">
   							<h4>Invitations: </h4>
+  							<div class="container-fluid" id="invite_id">
+  							</div>
   							<button type="button" class="btn btn-default" id="more_button">More Invites</button>
   						</div>
 					</div>
@@ -71,7 +74,7 @@
 	    <br></br>
     </div>
     <div class="modal fade" id="myModal" role="dialog">
-    	<div class="modal-dialog">
+    	<div class="modal-dialog"></div>
       	<div class="modal-content">
         	<div class="modal-header">
           		<button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -84,6 +87,29 @@
 					<textarea class="form-control" rows="5" id="invitation_comment"></textarea>
 				</div>
 				<div onclick="sendInv()" class="btn-block pull-right" style="padding-bottom:15px">
+        			<a href="#" class="btn btn-primary pull-right" id="send_inv_button">Send</a>
+	      		</div>
+        	</div>
+        	<div class="modal-footer">
+          		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        	</div>
+		</div>
+    
+    </div>
+     <div class="modal fade" id="modalAccept" role="dialog">
+    	<div class="modal-dialog">
+      	<div class="modal-content">
+        	<div class="modal-header">
+          		<button type="button" class="close" data-dismiss="modal">&times;</button>
+          		<h4 class="modal-title">Accept Invitation</h4>
+        	</div>
+        	<div class="modal-body">
+        		<p>Reply to their comment!</p>
+        		<div class="form-group">
+  					<label for="comment">Reply:</label>
+					<textarea class="form-control" rows="5" id="accept_comment"></textarea>
+				</div>
+				<div onclick="s" class="btn-block pull-right" style="padding-bottom:15px">
         			<a href="#" class="btn btn-primary pull-right" id="send_inv_button">Send</a>
 	      		</div>
         	</div>
@@ -207,8 +233,71 @@
 		}
 		
 		function fillInvs() {
-				
-		}
+			FB.getLoginStatus(function(response) {
+				FB.api("/me", function(theRes) {
+					httpGETAsync("rest/adverts/myadvert/"+theRes.id+"/invitations/", function(res) {
+						var j = JSON.parse(res);
+						for (var i=0; i<j.length; i++) {
+							
+							var container = document.createElement("div");
+							var accBtn = document.createElement("button");
+							var a = document.createElement("div");
+							var b = document.createElement("div");
+							var c = document.createElement("div");
+							var p = document.createElement("p");
+							var br = document.createElement("br");
+							
+							container.className = "container-fluid";
+							a.className = "col-sm-4 col-md-4 col-lg-4";
+							b.className = "col-sm-4 col-md-4 col-lg-4";
+							c.className = "col-sm-4 col-md-4 col-lg-4";
+							
+							a.innerHTML = "name: ";
+							a.appendChild(p);
+							a.innerHTML += j[i].name;
+							a.appendChild(p);
+							a.innerHTML += "message: ";
+							a.appendChild(p);
+							a.innerHTML += j[i].comment;
+							
+							c.innerHTML = "looking for: ";
+							c.appendChild(createList(j[i], "looking"));
+							c.innerHTML += "Offering: ";
+							c.appendChild(createList(j[i], "offering"));
+							
+							b.innerHTML = "date sent: ";
+							b.appendChild(p);
+							b.innerHTML += moment(j[i].date*1000).format("DD/MM/YY");
+							b.appendChild(p);
+							b.innerHTML += "status: ";
+							b.appendChild(p);
+							if (j[i].Status == "P") {
+								b.innerHTML += "Pending";
+							} else {
+								b.innerHTML += "Accepted";
+							}
+							
+							accBtn.innerHTML = "accept";
+							accBtn.className = "btn btn-default";
+							accBtn.setAttribute("type", "button");
+							accBtn.setAttribute("style", "padding: 0 5px 0 5px;");
+							accBtn.setAttribute("data-toggle", "modal");
+							accBtn.setAttribute("data-target","#modalAccept");
+							accBtn.setAttribute("id", "more_button");
+							
+							container.appendChild(a);
+							container.appendChild(b);
+							container.appendChild(c);
+							container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+							$("#invite_id").append(container);
+							$("#invite_id").append(accBtn);
+							$("#invite_id").append(br);
+							$("#invite_id").append(p);
+							
+						}
+					});
+				});
+			});		}
 		
 		function sendInv(id) {
 			var invComment = document.getElementById("invitation_comment").value;
@@ -221,9 +310,9 @@
 							if (j.data == "Success") {
 								document.getElementById("send_inv_button").innerHTML = "sent!";
 							} else if (j.data == "Database") {
-								document.getElementById("send_inv_button").innerHTML = "already sent!"
+								document.getElementById("send_inv_button").innerHTML = "already sent!";
 							} else {
-								document.getElementById("send_inv_button").innerHTML = "failed to send!"
+								document.getElementById("send_inv_button").innerHTML = "failed to send!";
 							}
 						});
 					});

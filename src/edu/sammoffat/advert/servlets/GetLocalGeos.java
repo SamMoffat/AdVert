@@ -9,9 +9,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 
 import com.google.gson.Gson;
 

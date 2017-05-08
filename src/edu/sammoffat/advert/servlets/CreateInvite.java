@@ -38,7 +38,7 @@ public class CreateInvite extends DatabaseConnect {
 			ResultSet check = st.executeQuery(String.format("SELECT matches.match_id "
 														  + "FROM matches "
 														  + "WHERE (matches.inviter_id = \"%s\" OR matches.receiver_id = \"%s\")"
-														  + "AND (matches.inviter_id = \"%s\" OR matches.receiver_id = \"%s\");",invId, invId, id, id));
+														  + "AND (matches.inviter_id = \"%s\" OR matches.receiver_id = \"%s\");", id, id, invId, invId));
 			if (!check.next()) {
 				ResultSet rsInv = st.executeQuery(String.format("SELECT users.advert_id FROM users WHERE users.user_id = %s;", invId));
 				String invAdId = "", recAdId = "";
