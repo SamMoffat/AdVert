@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!-- Page allows for creating a new advert-->
+<html lang="en">
+  <head>
+    <title>AdVert - Potential Matches</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="import" href="Navbar.html"></link> 
+    </head>
+<body onload="fillMatches()">
+	<div id="navbar_header"></div>
+    <div class="container-fluid">
+	    <div class="row">
+	      	<div class="col-sm-3 col-md-3 col-lg-3">
+	        <img src="img/advertlogo.png" id="background_img" class="img-rounded" alt="Ad-vert.png">
+	  	</div>
+	    	<div class="col-sm-6 col-md-6 col-lg-6 col-center rounded">
+	    		<h1>List of Your Matches</h1>
+	    		<div class="dropdown" style="float:right; margin: 20px;">
+					<button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"><m id="to_change">Sort By: Best</m>
+				  	<span class="caret"></span></button>
+				  	<ul class="dropdown-menu">
+				    	<li><a>Best</a></li>
+				   		<li><a>Date</a></li>
+				    	<li><a>Proximity</a></li>
+				  	</ul>
+				</div>
+				<br></br>
+				<br></br>
+	    		<div class="container-fluid" id="matches_id">
+  				</div>
+  				<div class="col-sm-12 col-md-12 col-lg-12 text-center">
+	  				<div class="btn-group">
+	  					<button type="button" onclick="backwrd()" class="btn btn-primary"><<</button>
+	  					<button type="button" onclick="forward()" class="btn btn-primary">>></button>
+					</div>
+				</div>
+	    	</div>
+	    	<div class="col-sm-3 col-md-3 col-lg-3">
+	    	</div>
+		</div>
+		<br></br>
+		<br>
+		<div class="modal fade" id="myModal" role="dialog">
+    	<div class="modal-dialog"></div>
+      	<div class="modal-content">
+        	<div class="modal-header">
+          		<button type="button" class="close" data-dismiss="modal">&times;</button>
+          		<h4 class="modal-title">Invitation</h4>
+        	</div>
+        	<div class="modal-body">
+        		<p>Please add a comment in your invitation, include a method of communication to discuss meeting up!</p>
+        		<div class="form-group">
+  					<label for="comment">Extra Notes:</label>
+					<textarea class="form-control" rows="5" id="invitation_comment"></textarea>
+				</div>
+				<div onclick="sendInv()" class="btn-block pull-right" style="padding-bottom:15px">
+        			<a href="#" class="btn btn-primary pull-right" id="send_inv_button">Send</a>
+	      		</div>
+        	</div>
+        	<div class="modal-footer">
+          		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        	</div>
+		</div>
+	</div>
+ 	<h1></h1>
+ 	<script>
+ 	var displace=0;
+ 	var sort="Best";
+ 	var invId;
+ 	
+ 	function fillMatches() {
+		FB.getLoginStatus(function(response) {
+			FB.api("/me", function(theRes) {
+				httpGETAsync("rest/adverts/myadvert/"+theRes.id+"/matches?dis="+displace+"&lmt=10&sort="+sort, function(res) {
+					var j = JSON.parse(res);
+					console.log("curTEST (j.length) = " + j.length);
+					for (var i=0; i<j.length; i++) {
+						var p = document.createElement("p");
+						var br = document.createElement("br");
+						var img = document.createElement("img");
+						var a = document.createElement("div");
+						var b = document.createElement("div");
+						var bLook = document.createElement("li");
+						var bOffer = document.createElement("li");
+						var container = document.createElement("div");
+						var invBtn = document.createElement("button");
+						container.className = "container-fluid rounded";
+						img.setAttribute("src", "https://graph.facebook.com/"+j[i].id+"/picture?type=large");
+						img.setAttribute("width", "60%");
+						img.setAttribute("height", "60%");
+						a.className = "col-sm-5 col-md-5 col-lg-5";
+						b.className = "col-sm-7 col-md-7 col-lg-7";
+						console.log("this is a test");
+						a.innerHTML = "name: ";
+						a.appendChild(p);
+						a.innerHTML += j[i].name;
+						a.appendChild(br);
+						a.appendChild(img);
+						a.appendChild(p);
+						a.innerHTML += j[i].weighting;
+						b.innerHTML = "looking for: ";
+						b.appendChild(createList(j[i], "looking"));
+						b.innerHTML += "Offering: ";
+						b.appendChild(createList(j[i], "offering"));
+						invBtn.innerHTML = "invite";
+						invBtn.className = "btn btn-default";
+						invBtn.setAttribute("type", "button");
+						invBtn.setAttribute("style", "padding: 0 5px 0 5px;");
+						invBtn.setAttribute("onclick", "sendInvId('"+j[i].id+"')")
+						invBtn.setAttribute("data-toggle", "modal");
+						invBtn.setAttribute("data-target","#myModal");
+						invBtn.setAttribute("id", "more_button");
+						container.appendChild(a);
+						container.appendChild(b);
+						container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+						$("#matches_id").append(container);
+						$("#matches_id").append(invBtn);
+						$("#matches_id").append(br);
+						$("#matches_id").append(p);
+					}
+				});
+			});
+		});
+	}
+ 	
+ 	function createList(j, type) {
+		var limit;
+		if (type == "looking") {
+			limit = j.look;
+		} else {
+			limit = j.offer;
+		}
+		console.log(limit);
+		var ret = document.createElement("ul");
+		for (var key in limit) {
+			if (limit.hasOwnProperty(key)) {
+				if (limit[key] == true) {
+					var a = document.createElement("li");
+					a.innerHTML = key;
+					ret.appendChild(a);
+				}
+				//console.log(key + " >>> " + limit[key]);
+			}
+		}
+		console.log(ret);
+		return ret;
+	}
+ 	
+ 	function forward () {
+ 		$("#matches_id").children().remove()
+ 		displace += 10;
+ 		fillMatches();
+ 		console.log("displace   " + displace);
+ 	}
+ 	function backwrd () {
+ 		if (displace-10 >= 0) {
+ 			displace -= 10;
+ 			$("#matches_id").children().remove()
+ 			fillMatches();
+ 		} else {
+ 			displace = 0;
+ 		}
+ 		console.log("displace   " + displace);
+ 	}
+ 	$(document).on('click', '.dropdown-menu li a', function () {
+ 		var holder = $(this).text();
+ 		$("#to_change").text("Sort By: " + holder);
+ 		sort = holder;
+ 		$("#matches_id").children().remove();
+ 		fillMatches();
+ 		
+ 	});
+ 	
+ 	function sendInv(id) {
+		var invComment = document.getElementById("invitation_comment").value;
+		console.log("BOOOOOOOOOOM");
+		if (invComment != "") {
+			FB.getLoginStatus(function(response) {
+				FB.api("/me", function(theRes) {
+					httpGETAsync("rest/adverts/otherAdverts/"+invId+"/invite?m=" + theRes.id + "&com=" + invComment, function(res) {
+						var j = JSON.parse(res);
+						if (j.data == "Success") {
+							document.getElementById("send_inv_button").innerHTML = "sent!";
+						} else if (j.data == "Database") {
+							document.getElementById("send_inv_button").innerHTML = "already sent!";
+						} else {
+							document.getElementById("send_inv_button").innerHTML = "failed to send!";
+						}
+					});
+				});
+			});	
+		} else {
+			document.getElementById("send_inv_button").innerHTML = "Please add a comment!";
+		}
+	}
+ 	
+ 	function sendInvId(sentId) {
+		invId = sentId;
+		document.getElementById("send_inv_button").innerHTML = "Send"
+		console.log(sentId);
+	}
+ 	</script>
+</body>
+</html>

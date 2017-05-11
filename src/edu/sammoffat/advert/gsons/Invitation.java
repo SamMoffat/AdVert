@@ -8,6 +8,17 @@ public class Invitation {
 @SerializedName("name")
 @Expose
 private String name;
+@SerializedName("id")
+@Expose
+private String id;
+public String getId() {
+	return id;
+}
+
+public void setId(String id) {
+	this.id = id;
+}
+
 @SerializedName("date")
 @Expose
 private long date;

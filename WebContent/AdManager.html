@@ -1,15 +1,137 @@
 <!DOCTYPE html>
-<!-- intermediate screen for all ad related pages which will let you see a few suggested matches, request etc.-->
+<!--Sign up page for member's without entry in the database -->
 <html lang="en">
   <head>
-    <title>Bootstrap 101 Template</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"></link>
-    <script src="https://ajax.googleapis.com/ajax/liba/jquery/1.11.3/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/3.3.4/js/bootstrap.min.js"></script>
+    <title>AdVert >> Edit your advert</title>
+    <link rel="import" href="Navbar.html"></link>
+    <link rel="stylesheet" type="text/css" href="css/page_specific/SignUp.css"></link>
   </head>
-<body>
-  <!-- -->
-</body>
+  <body onload="dropdownFill();">
+  	<div id="navbar_header"></div>
+    <div class="container-fluid">
+	    <div class="row">
+	      <div class="col-sm-3 col-md-3 col-lg-3">
+	        <img src="img/advertlogo.png" id="background_img" class="img-rounded" alt="Ad-vert.png">
+	      </div>
+	      <div class="col-sm-6 col-md-6 col-lg-6 col-center rounded">
+	      	<h1>Want to Change your AdVert?</h1>
+	      	<div id="geolocation_show_id"></div>
+	      	<h2>Want to Change your Area?</h2>
+	      	<div class="dropdown dropdown-menu-left">
+	           <button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">Area
+	          <span class="caret"></span></button>
+	          <ul class="dropdown-menu" id="dropdown_id" role="menu" aria-labelledby="menu1">
+	            <li role="presentation" class="dropdown-header">United Kingdom</li>
+	          </ul>
+	        </div>     
+	      	<h2>Change what you're looking for</h2>
+	      	<div class="container-fluid" id="joblist-looking">
+	      	</div>
+	      	<h2>Change what you're offering</h2>
+	      	<div class="container-fluid" id="joblist-offering">
+	      	</div>
+	      	<h2>Change your comment?</h2>
+	      	<div class="form-group">
+  					<label for="comment">Extra Notes:</label>
+					  <textarea class="form-control" rows="5" id="comment"></textarea>
+					</div>
+					<div onclick="submit()" class="btn-block pull-right" style="padding-bottom:15px">
+        		<a href="#" class="btn btn-primary pull-right">Submit</a>
+	      	</div>
+	      	<div class="alert alert-danger">
+  				Oh no! Something went wrong with your submission. Have you enabled geolocation?
+			</div>
+	      </div>
+	      <div class="col-sm-3 col-md-3 col-lg-3">
+	      </div>
+	    </div>
+	    <br></br>
+    </div>
+    <script type="text/javascript" src="js/geolocation.js"></script>
+		<script type="text/javascript">
+		  var content = document.querySelector('link[rel="import"]').import;
+		  var el1 = content.querySelector('.joblist_checkboxes_looking');
+		  var el2 = content.querySelector('.joblist_checkboxes_offering');
+		  var list1 = document.getElementById("joblist-looking");
+		  var list2 = document.getElementById("joblist-offering");
+		  list1.insertBefore( el1.cloneNode(true), list1.childNodes[0] );
+		  list2.insertBefore( el2.cloneNode(true), list2.childNodes[0] );
+		  var parseJSON;
+		  var index;
+		  var lookingRes  = [0,0,0,0,0,0,0,0,0,0,0,0];
+		  var offeringRes = [0,0,0,0,0,0,0,0,0,0,0,0];
+		  function dropdownFill() {	
+		  	httpGETAsync("rest/area_list/", function (theCallback) {
+		  		parseJSON = JSON.parse(theCallback);
+		  		console.log(parseJSON.length);
+		  		for (var i=0; i<parseJSON.length; i++) {
+		  			var li = document.createElement("li");
+		  			li.setAttribute("role","presentation");
+		  			var liAnchor = document.createElement("a");
+		  			liAnchor.setAttribute("role", "menuitem");
+		  			liAnchor.innerHTML = parseJSON[i].location;
+		  			var dropdownElem = document.getElementById("dropdown_id");
+		  			dropdownElem.insertBefore(li, dropdownElem.childNodes[2]);
+		  			li.insertBefore(liAnchor, li.childNodes[2]);
+		  		}
+		  	});
+		  }
+		function ping(val, type) {
+			if (type === 1) {
+				if (lookingRes[val] == 0) {
+					lookingRes[val] = 1;
+				} else {
+					lookingRes[val] = 0;
+				}
+			} else {
+				if (offeringRes[val] == 0) {
+					offeringRes[val] = 1;
+				} else {
+					offeringRes[val] = 0;
+				}	
+			}
+		}
+		  
+		  function submit() {
+			  FB.api('/me', function(theResponse) {
+				  var tstr = getLooking();
+				  var tsts = getOffering();
+				  var comment = document.getElementById("comment").value;
+				  console.log("SHOPFSDFH " + JSON.stringify(theResponse));
+				  httpPOSTAsyncWToken("rest/adverts/myadvert/"+theResponse.id+"/edit?name="+theResponse.name+"&id="+nameIdRes.id+"&lo="+geoLon+"&la="+geoLat+"&comm="+comment+"&area="+index+"&look="+getLooking()+"&offer="+getOffering(), loginRes.authResponse.accessToken, function(theCallback) {
+					  var a = JSON.parse(theCallback);
+					  if (a.data == "Success") {
+						  window.location.replace("FrontPage.html");
+					  } else {
+						  $(".alert").show();
+					  }
+				  });
+			  });
+		  }
+		  
+		  function getLooking() {
+			  console.log(lookingRes.join(""));
+			  return lookingRes.join("");
+		  }
+		  
+		  function getOffering() {
+			  console.log(offeringRes.join(""));
+			  return offeringRes.join("");
+		  }
+
+			$(document).on('click', '.dropdown-menu li a', function () {
+    		var holder = $(this).text();
+    		$('#menu1').html(holder);
+    		$.each(parseJSON, function(key, value) {
+    			if (value.location == holder) {
+    				index = value.index;
+    				console.log(value.index);
+    				return false;
+    			}
+    		});
+			});
+		$('.alert').hide();
+		</script>
+  </body>
 </html>

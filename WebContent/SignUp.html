@@ -78,7 +78,7 @@
 		  	});
 		  }
 		function ping(val, type) {
-			if (type === 0) {
+			if (type === 1) {
 				if (lookingRes[val] == 0) {
 					lookingRes[val] = 1;
 				} else {
@@ -99,7 +99,7 @@
 				  var tsts = getOffering();
 				  var comment = document.getElementById("comment").value;
 				  console.log("SHOPFSDFH " + JSON.stringify(theResponse));
-				  httpPOSTAsyncWToken("rest/SignUp?name="+nameIdRes.name+"&id="+nameIdRes.id+"&lo="+longitude+"&la="+latitude+"&comm="+comment+"&area="+index+"&look="+getLooking()+"&offer="+getOffering(), loginRes.authResponse.accessToken, function(theCallback) {
+				  httpPOSTAsyncWToken("rest/SignUp?name="+nameIdRes.name+"&id="+nameIdRes.id+"&lo="+geoLon+"&la="+geoLat+"&comm="+comment+"&area="+index+"&look="+getLooking()+"&offer="+getOffering(), loginRes.authResponse.accessToken, function(theCallback) {
 					  var a = JSON.parse(theCallback);
 					  if (a.data == "Success") {
 						  window.location.replace("FrontPage.html");

@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
   	<meta charset="utf-8">
-    <title>Advert Front Page</title>
+    <title>AdVert Front Page</title>
     <script type="text/javascript" src="js/moment.js"></script>
     <link rel="import" href="Navbar.html"></link>
     <link rel="stylesheet" type="text/css" href="css/page_specific/FrontPage.css"></link>
@@ -41,7 +41,7 @@
   							<h4>Your top matches: </h4>
   							<div class="container-fluid" id="matches_id">
   							</div>
-  							<button type="button" class="btn btn-default" id="more_button">More matches</button>
+  							<button onclick="moreAds()" type="button" class="btn btn-default" id="more_button">More matches</button>
   						</div>
 					</div>
 	      		</div>
@@ -52,7 +52,7 @@
   							<h4>Invitations: </h4>
   							<div class="container-fluid" id="invite_id">
   							</div>
-  							<button type="button" class="btn btn-default" id="more_button">More Invites</button>
+  							<button onclick="moreInvs()" type="button" class="btn btn-default" id="more_button">More Invites</button>
   						</div>
 					</div>
 	      		</div>
@@ -109,7 +109,7 @@
   					<label for="comment">Reply:</label>
 					<textarea class="form-control" rows="5" id="accept_comment"></textarea>
 				</div>
-				<div onclick="s" class="btn-block pull-right" style="padding-bottom:15px">
+				<div onclick="AcceptInv()" class="btn-block pull-right" style="padding-bottom:15px">
         			<a href="#" class="btn btn-primary pull-right" id="send_inv_button">Send</a>
 	      		</div>
         	</div>
@@ -121,7 +121,8 @@
     </div>
   </div>
     <script type="text/javascript">
-      	var invId;
+    	var token;
+       	var invId;
       	var curId;
       	var curName;
         FB.init({
@@ -133,8 +134,18 @@
   		function editAd() {
   			window.location.replace("AdManager.html");
   		}
+  		
+  		function moreAds() {
+  			window.location.replace("AdMore.html");
+  		}
+  		
+  		function moreInvs() {
+  			window.location.replace("AdMatches.html");
+  		}
+  		
 		function fillAd() {
 	        FB.getLoginStatus(function(response) {
+	        	token = response.authResponse.accessToken;
 	            FB.api("/me", function(theRes) {
 	            	curId = theRes.id;
 	            	curName = theRes.name;
@@ -212,9 +223,9 @@
 		function createList(j, type) {
 			var limit;
 			if (type == "looking") {
-				limit = j.look;
-			} else {
 				limit = j.offer;
+			} else {
+				limit = j.look;
 			}
 			console.log(limit);
 			var ret = document.createElement("ul");
@@ -241,20 +252,25 @@
 							
 							var container = document.createElement("div");
 							var accBtn = document.createElement("button");
+							var decBtn = document.createElement("button");
 							var a = document.createElement("div");
 							var b = document.createElement("div");
 							var c = document.createElement("div");
 							var p = document.createElement("p");
 							var br = document.createElement("br");
+							var nId = document.createElement("div");
 							
 							container.className = "container-fluid";
+							container.setAttribute("id", "invite"+i);
 							a.className = "col-sm-4 col-md-4 col-lg-4";
 							b.className = "col-sm-4 col-md-4 col-lg-4";
 							c.className = "col-sm-4 col-md-4 col-lg-4";
 							
 							a.innerHTML = "name: ";
 							a.appendChild(p);
-							a.innerHTML += j[i].name;
+							nId.innerHTML = j[i].name;
+							a.appendChild(nId);
+							//a.innerHTML += j[i].name;
 							a.appendChild(p);
 							a.innerHTML += "message: ";
 							a.appendChild(p);
@@ -284,6 +300,14 @@
 							accBtn.setAttribute("data-toggle", "modal");
 							accBtn.setAttribute("data-target","#modalAccept");
 							accBtn.setAttribute("id", "more_button");
+							accBtn.setAttribute("onclick", "sendInvId("+j[i].id+")");
+							
+							decBtn.innerHTML = "decline";
+							decBtn.className = "btn btn-default";
+							decBtn.setAttribute("type", "button");
+							decBtn.setAttribute("style", "padding: 0 5px 0 5px");
+							decBtn.setAttribute("id", "more_button");
+							decBtn.setAttribute("onclick", "decline("+i+")");
 							
 							container.appendChild(a);
 							container.appendChild(b);
@@ -291,13 +315,15 @@
 							container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
 							$("#invite_id").append(container);
 							$("#invite_id").append(accBtn);
+							$("#invite_id").append(decBtn);
 							$("#invite_id").append(br);
 							$("#invite_id").append(p);
 							
 						}
 					});
 				});
-			});		}
+			});		
+		}
 		
 		function sendInv(id) {
 			var invComment = document.getElementById("invitation_comment").value;
@@ -320,6 +346,24 @@
 			} else {
 				document.getElementById("send_inv_button").innerHTML = "Please add a comment!";
 			}
+		}
+		
+		function decline(toDecId) {
+			var inv = $("#invite" + toDecId);
+			console.log("OOO HE'S TRYIN'");
+			httpPOSTAsyncWToken("rest/adverts/myadvert/"+curId+"/invitations/delete?inv="+inv.children().children().html(), token, function(theRes) {
+				var j = JSON.parse(theRes);
+				console.log(j);
+				if (j.data == "deleted") {
+					inv.next().remove();
+					inv.next().remove();
+					inv.remove();
+				} else if (j.data == "sql fail") {
+					inv.next().html = "no invitation to delete!"
+				} else if (j.data == "auth error") {
+					inv.next().html = "log back in with facebook!"
+				}
+			});
 		}
 		
 		function sendInvId(sentId) {
@@ -366,6 +410,17 @@
 			});
 			
 			marker.setMap(map);
+		}
+		
+		function AcceptInv() {
+			var x= $("#accept_comment").val();
+			console.log(x);
+			httpPOSTAsyncWToken("rest/adverts/otherAdverts/"+invId+"/invite/accept?inv="+curId+"&comm="+x, token, function(res) {
+				var j = JSON.parse(res);
+				if (j.data == "Success") {
+					fillInvs();
+				}
+			});
 		}
   	</script>
   	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAetBEZpOqWuIXkzrK6P0cH8lW9ifVEps&callback=initMap"> </script>

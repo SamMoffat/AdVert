@@ -55,9 +55,18 @@ var id;
           console.log(parseJSON.data);
           document.getElementById('login').innerHTML = " " + apiResponse.name;
           var destination;
-          if (parseJSON.data === "Success")       { destination = 'FrontPage.html'}
-          else if (parseJSON.data === "Failure")  { destination = 'SignUp.html'   }
-          else                                    { destination = 'OffLine.html'  }
+          if (parseJSON.data === "Success") { 
+        	  var path = window.location.pathname;
+        	  console.log("path id");
+        	  console.log(path);
+        	  var page = path.split("/").pop();
+        	  console.log("page id");
+        	  console.log(page);
+        	  if (page == "LogIn.html" || page == "")	{ destination = 'FrontPage.html'}
+        	  else 								  		{ destination = page            }
+          }
+          else if (parseJSON.data === "Failure")  		{ destination = 'SignUp.html'   }
+          else                                    		{ destination = 'OffLine.html'  }
           if ("/Ad-Vert/" + destination !== window.location.pathname) { //stop redirection loop
             window.location.replace(destination);
           }
@@ -102,10 +111,10 @@ var id;
 	      <a class="navbar-brand gradient-texts" href="#"><b>AdVert</b></a>
 	    </div>
 	    <ul class="nav navbar-nav">
-	     	<li class="active"><a href="#"><span class="glyphicon glyphicon-home" data-toggle="tooltip-bottom" data-original-title="Home"></span></a></li>
-	      <li id="login_only_invites"><a href="#"><span class="glyphicon glyphicon-envelope" data-toggle="tooltip-bottom" data-original-title="Invites"></span></a></li>
+	     	<li><a><span onclick="homeBtn()" class="glyphicon glyphicon-home" data-toggle="tooltip-bottom" data-original-title="Home"></span></a></li>
+	      <li id="login_only_invites"><a><span onclick="invBtn()" class="glyphicon glyphicon-envelope" data-toggle="tooltip-bottom" data-original-title="Invites"></span></a></li>
 	      <li id="login_only_area"><a href="#"><span class="glyphicon glyphicon-map-marker" data-toggle="tooltip-bottom" data-original-title="Area Search"></span></a></li>
-	      <li id="login_only_matches"><a href="#"><span class="glyphicon glyphicon-tasks" data-toggle="tooltip-bottom" data-original-title="Your Matches"></span></a></li>
+	      <li id="login_only_matches"><a href="#"><span onclick="matchBtn()" class="glyphicon glyphicon-tasks" data-toggle="tooltip-bottom" data-original-title="Your Matches"></span></a></li>
 	    </ul>
 	    <ul class="nav navbar-nav navbar-right">
         <li id="logout_only_signup"><a onclick="login()"><span class="glyphicon glyphicon-user" data-toggle="tooltip-bottom" data-original-title="Sign Up"></span></a></li>
@@ -131,39 +140,39 @@ var id;
       <div class="checkbox" id="check1">
         <label><input type="checkbox" value="" onclick="ping(0, 0)">Painting (interior)</label>
       </div>
-      <div class="checkbox" id="check2">
-        <label><input type="checkbox" value="" onclick="ping(1, 0)">Gardening (flowers)</label>
-      </div>
-      <div class="checkbox" id="check3">
-        <label><input type="checkbox" value="" onclick="ping(2, 0)">Piano lessons</label>
-      </div>
       <div class="checkbox" id="check4">
-        <label><input type="checkbox" value="" onclick="ping(3, 0)">Trumpet lessons</label>
-      </div>
-    </div>
-    <div class="col-sm-4">
-      <div class="checkbox" id="check5">
-        <label><input type="checkbox" value="" onclick="ping(4, 0)">Painting (exterior)</label>
-      </div>
-      <div class="checkbox" id="check6">
-        <label><input type="checkbox" value="" onclick="ping(5, 0)">Gardening (trimming)</label>
+        <label><input type="checkbox" value="" onclick="ping(3, 0)">Gardening (flowers)</label>
       </div>
       <div class="checkbox" id="check7">
-        <label><input type="checkbox" value="" onclick="ping(6, 0)">Drumming lessons</label>
+        <label><input type="checkbox" value="" onclick="ping(6, 0)">Piano lessons</label>
       </div>
-      <div class="checkbox" id="check8">
-        <label><input type="checkbox" value="" onclick="ping(7, 0)">Flute lessons</label>
+      <div class="checkbox" id="check10">
+        <label><input type="checkbox" value="" onclick="ping(9, 0)">Trumpet lessons</label>
       </div>
     </div>
     <div class="col-sm-4">
-      <div class="checkbox" id="check9">
-        <label><input type="checkbox" value="" onclick="ping(8, 0)">Gardening (mowing)</label>
+      <div class="checkbox" id="check2">
+        <label><input type="checkbox" value="" onclick="ping(1, 0)">Painting (exterior)</label>
       </div>
-      <div class="checkbox" id="check10">
-        <label><input type="checkbox" value="" onclick="ping(9, 0)">Guitar lessons</label>
+      <div class="checkbox" id="check5">
+        <label><input type="checkbox" value="" onclick="ping(4, 0)">Gardening (trimming)</label>
+      </div>
+      <div class="checkbox" id="check8">
+        <label><input type="checkbox" value="" onclick="ping(7, 0)">Drumming lessons</label>
       </div>
       <div class="checkbox" id="check11">
-        <label><input type="checkbox" value="" onclick="ping(10, 0)">Saxophone lessons</label>
+        <label><input type="checkbox" value="" onclick="ping(10, 0)">Flute lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check3">
+        <label><input type="checkbox" value="" onclick="ping(2, 0)">Gardening (mowing)</label>
+      </div>
+      <div class="checkbox" id="check6">
+        <label><input type="checkbox" value="" onclick="ping(5, 0)">Guitar lessons</label>
+      </div>
+      <div class="checkbox" id="check9">
+        <label><input type="checkbox" value="" onclick="ping(8, 0)">Saxophone lessons</label>
       </div>
       <div class="checkbox" id="check12">
         <label><input type="checkbox" value="" onclick="ping(11, 0)">DIY jobs</label>
@@ -178,39 +187,39 @@ var id;
       <div class="checkbox" id="check1">
         <label><input type="checkbox" value="" onclick="ping(0, 1)">Painting (interior)</label>
       </div>
-      <div class="checkbox" id="check2">
-        <label><input type="checkbox" value="" onclick="ping(1, 1)">Gardening (flowers)</label>
-      </div>
-      <div class="checkbox" id="check3">
-        <label><input type="checkbox" value="" onclick="ping(2, 1)">Piano lessons</label>
-      </div>
       <div class="checkbox" id="check4">
-        <label><input type="checkbox" value="" onclick="ping(3, 1)">Trumpet lessons</label>
-      </div>
-    </div>
-    <div class="col-sm-4">
-      <div class="checkbox" id="check5">
-        <label><input type="checkbox" value="" onclick="ping(4, 1)">Painting (exterior)</label>
-      </div>
-      <div class="checkbox" id="check6">
-        <label><input type="checkbox" value="" onclick="ping(5, 1)">Gardening (trimming)</label>
+        <label><input type="checkbox" value="" onclick="ping(3, 1)">Gardening (flowers)</label>
       </div>
       <div class="checkbox" id="check7">
-        <label><input type="checkbox" value="" onclick="ping(6, 1)">Drumming lessons</label>
+        <label><input type="checkbox" value="" onclick="ping(6, 1)">Piano lessons</label>
       </div>
-      <div class="checkbox" id="check8">
-        <label><input type="checkbox" value="" onclick="ping(7, 1)">Flute lessons</label>
+      <div class="checkbox" id="check10">
+        <label><input type="checkbox" value="" onclick="ping(9, 1)">Trumpet lessons</label>
       </div>
     </div>
     <div class="col-sm-4">
-      <div class="checkbox" id="check9">
-        <label><input type="checkbox" value="" onclick="ping(8, 1)">Gardening (mowing)</label>
+      <div class="checkbox" id="check2">
+        <label><input type="checkbox" value="" onclick="ping(1, 1)">Painting (exterior)</label>
       </div>
-      <div class="checkbox" id="check10">
-        <label><input type="checkbox" value="" onclick="ping(9, 1)">Guitar lessons</label>
+      <div class="checkbox" id="check5">
+        <label><input type="checkbox" value="" onclick="ping(4, 1)">Gardening (trimming)</label>
+      </div>
+      <div class="checkbox" id="check8">
+        <label><input type="checkbox" value="" onclick="ping(7, 1)">Drumming lessons</label>
       </div>
       <div class="checkbox" id="check11">
-        <label><input type="checkbox" value="" onclick="ping(10, 1)">Saxophone lessons</label>
+        <label><input type="checkbox" value="" onclick="ping(10, 1)">Flute lessons</label>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="checkbox" id="check3">
+        <label><input type="checkbox" value="" onclick="ping(2, 1)">Gardening (mowing)</label>
+      </div>
+      <div class="checkbox" id="check6">
+        <label><input type="checkbox" value="" onclick="ping(5, 1)">Guitar lessons</label>
+      </div>
+      <div class="checkbox" id="check9">
+        <label><input type="checkbox" value="" onclick="ping(8, 1)">Saxophone lessons</label>
       </div>
       <div class="checkbox" id="check12">
         <label><input type="checkbox" value="" onclick="ping(11, 1)">DIY jobs</label>
@@ -229,5 +238,14 @@ var id;
   var content = document.querySelector('link[rel="import"]').import;
   var el = content.querySelector('.footer_id');
   document.body.appendChild(el.cloneNode(true));
- 
+  
+  function homeBtn() {
+	  window.location.replace('FrontPage.html');
+  }
+  function matchBtn() {
+ 	window.location.replace('AdMore.html');
+  }
+  function invBtn() {
+	window.location.replace("AdMatches.html");
+  }
 </script>

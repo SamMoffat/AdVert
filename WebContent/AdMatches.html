@@ -1,15 +1,298 @@
 <!DOCTYPE html>
 <!-- Shows you all matches, suggested and requests-->
 <html lang="en">
-  <head>
-    <title>Bootstrap 101 Template</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"></link>
-    <script src="https://ajax.googleapis.com/ajax/liba/jquery/1.11.3/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/3.3.4/js/bootstrap.min.js"></script>
-  </head>
-<body>
-  <!-- -->
-</body>
+	<head>
+    	<title>AdVert - Potential Matches</title>
+    	<script type="text/javascript" src="js/moment.js"></script>
+    	<meta charset="utf-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+    	<link rel="import" href="Navbar.html"></link> 
+    </head>
+ 
+	<body onload="fillInvs(); fillSent(); fillComplete()">
+		<div id="navbar_header"></div>
+    	<div class="container-fluid">
+	    	<div class="row">
+	      		<div class="col-sm-2 col-md-2 col-lg-2">
+	        		<img src="img/advertlogo.png" id="background_img" class="img-rounded" alt="Ad-vert.png">
+	      		</div>
+	      		<div class="col-sm-8 col-md-8 col-lg-8 col-center rounded">
+	      			<div class="panel panel-default">
+	      				<div class="panel-header"><h2 class="panel-header-title">Invitations</h2></div>
+  						<div class="panel-body">
+  							<div class="container-fluid" id="invite_id">
+  							</div>
+  						</div>
+  					</div>
+  					<div class="panel panel-default">
+	      				<div class="panel-header"><h2 class="panel-header-title">Invites You Sent</h2></div>
+  						<div class="panel-body">
+  							<div class="container-fluid" id="sent_id">
+  							</div>
+  						</div>
+  					</div>
+  					<div class="panel panel-default">
+	      				<div class="panel-header"><h2 class="panel-header-title">Accepted Invites</h2></div>
+  						<div class="panel-body">
+  							<div class="container-fluid" id="accepted_id">
+  							</div>
+  						</div>
+  					</div>
+				</div>
+				<div class="col-sm-2 col-md-2 col-lg-2">
+	        	</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+	var token;
+   	var invId;
+  	var curId;
+  	var curName;
+  	
+ 	function fillInvs() {
+		console.log("AKNFSDKNFKADSNFKASDNFKNADKFNKSFNKASNFS");
+		FB.getLoginStatus(function(response) {
+			console.log("AKNFSDKNFKADSNFKASDNFKNADKFNKSFNKASNFS");
+			FB.api("/me", function(theRes) {
+				console.log("AKNFSDKNFKADSNFKASDNFKNADKFNKSFNKASNFS");
+				httpGETAsync("rest/adverts/myadvert/"+theRes.id+"/invitations/", function(res) {
+					console.log("AKNFSDKNFKADSNFKASDNFKNADKFNKSFNKASNFS");
+					var j = JSON.parse(res);
+					console.log(j);
+					for (var i=0; i<j.length; i++) {
+						
+						var container = document.createElement("div");
+						var accBtn = document.createElement("button");
+						var decBtn = document.createElement("button");
+						var a = document.createElement("div");
+						var b = document.createElement("div");
+						var c = document.createElement("div");
+						var p = document.createElement("p");
+						var br = document.createElement("br");
+						var nId = document.createElement("div");
+						
+						container.className = "container-fluid";
+						container.setAttribute("id", "invite"+i);
+						a.className = "col-sm-4 col-md-4 col-lg-4";
+						b.className = "col-sm-4 col-md-4 col-lg-4";
+						c.className = "col-sm-4 col-md-4 col-lg-4";
+						
+						a.innerHTML = "name: ";
+						a.appendChild(p);
+						nId.innerHTML = j[i].name;
+						a.appendChild(nId);
+						//a.innerHTML += j[i].name;
+						a.appendChild(p);
+						a.innerHTML += "message: ";
+						a.appendChild(p);
+						a.innerHTML += j[i].comment;
+						
+						c.innerHTML = "looking for: ";
+						c.appendChild(createList(j[i], "looking"));
+						c.innerHTML += "Offering: ";
+						c.appendChild(createList(j[i], "offering"));
+						
+						b.innerHTML = "date sent: ";
+						b.appendChild(p);
+						b.innerHTML += moment(j[i].date*1000).format("DD/MM/YY");
+						b.appendChild(p);
+						b.innerHTML += "status: ";
+						b.appendChild(p);
+						if (j[i].Status == "P") {
+							b.innerHTML += "Pending";
+						} else {
+							b.innerHTML += "Accepted";
+						}
+						
+						accBtn.innerHTML = "accept";
+						accBtn.className = "btn btn-default";
+						accBtn.setAttribute("type", "button");
+						accBtn.setAttribute("style", "padding: 0 5px 0 5px;");
+						accBtn.setAttribute("data-toggle", "modal");
+						accBtn.setAttribute("data-target","#modalAccept");
+						accBtn.setAttribute("id", "more_button");
+						accBtn.setAttribute("onclick", "sendInvId("+j[i].id+")");
+						
+						decBtn.innerHTML = "decline";
+						decBtn.className = "btn btn-default";
+						decBtn.setAttribute("type", "button");
+						decBtn.setAttribute("style", "padding: 0 5px 0 5px");
+						decBtn.setAttribute("id", "more_button");
+						decBtn.setAttribute("onclick", "decline("+i+")");
+						
+						container.appendChild(a);
+						container.appendChild(b);
+						container.appendChild(c);
+						container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+						$("#invite_id").append(container);
+						$("#invite_id").append(accBtn);
+						$("#invite_id").append(decBtn);
+						$("#invite_id").append(br);
+						$("#invite_id").append(p);
+						
+					}
+				});
+			});
+		});	
+	}
+ 	
+ 	function fillSent() {
+ 		FB.getLoginStatus(function(response) {
+	    	FB.api("/me", function(fbRes) {	
+	    		console.log("TIS right HERE");
+	    		console.log(fbRes);
+		    	httpGETAsync("rest/adverts/myadvert/"+fbRes.id+"/invitations/myinvites", function(sentRes) {
+		    		console.log("----------------------------------------------------------------");
+		    		var j = JSON.parse(sentRes);
+		    		console.log(j);
+		    		for (var i=0;i<sentRes.length;i++) {
+		    			var container = document.createElement("div");
+		    			var a = document.createElement("div");
+		    			var b = document.createElement("div");
+		    			var c = document.createElement("div");
+		    			var p = document.createElement("p");
+						var br = document.createElement("br");
+						var nId = document.createElement("div");
+						
+						container.className = "container-fluid";
+						
+						a.className = "col-sm-4 col-md-4 col-lg-4";
+						b.className = "col-sm-4 col-md-4 col-lg-4";
+						c.className = "col-sm-4 col-md-4 col-lg-4";
+						
+						a.innerHTML = "name: ";
+						a.appendChild(p);
+						nId.innerHTML = j[i].name;
+						a.appendChild(nId);
+						a.appendChild(p);
+						a.innerHTML += "your message: ";
+						a.appendChild(p);
+						console.log(j[i].comment);
+						a.innerHTML += j[i].comment;
+						a.appendChild(p);
+						a.innerHTML += "their message: ";
+						a.appendChild(p);
+						if (j[i].theirComment != null) {
+							a.innerHTML += j[i].theirComment;
+						} else { a.innerHTML += "No Reply"; }
+						
+						c.innerHTML = "looking for: ";
+						c.appendChild(createList(j[i], "looking"));
+						c.innerHTML += "Offering: ";
+						c.appendChild(createList(j[i], "offering"));
+						
+						b.innerHTML = "date sent: ";
+						b.appendChild(p);
+						b.innerHTML += moment(j[i].date*1000).format("DD/MM/YY");
+						b.appendChild(p);
+						b.innerHTML += "status: ";
+						b.appendChild(p);
+						if (j[i].Status == "P") {
+							b.innerHTML += "Pending";
+						} else {
+							b.innerHTML += "Accepted";
+						}
+						
+						container.appendChild(a);
+						container.appendChild(b);
+						container.appendChild(c);
+						container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+						$("#sent_id").append(container);
+		    		}
+		    	});
+	    	});
+ 		});
+    }
+	
+ 	function fillComplete() {
+ 		FB.getLoginStatus(function(response) {
+	    	FB.api("/me", function(fbRes) {	
+	    		console.log("TIS right HEREASDASDS");
+	    		console.log(fbRes);
+		    	httpGETAsync("rest/adverts/myadvert/"+fbRes.id+"/invitations/complete", function(sentRes) {
+		   			var j = JSON.parse(sentRes);
+		   			console.log(j);
+		   			for (var i=0;i<j.length;i++) {
+		   				var container = document.createElement("div");
+		    			var a = document.createElement("div");
+		    			var b = document.createElement("div");
+		    			var c = document.createElement("div");
+		    			var p = document.createElement("p");
+						var br = document.createElement("br");
+						var nId = document.createElement("div");
+						
+						container.className = "container-fluid";
+						
+						a.className = "col-sm-4 col-md-4 col-lg-4";
+						b.className = "col-sm-4 col-md-4 col-lg-4";
+						c.className = "col-sm-4 col-md-4 col-lg-4";
+						
+						a.innerHTML = "name: ";
+						a.appendChild(p);
+						nId.innerHTML = j[i].name;
+						a.appendChild(nId);
+						a.appendChild(p);
+						a.innerHTML += "your message: ";
+						a.appendChild(p);
+						console.log(j[i].comment);
+						a.innerHTML += j[i].comment;
+						a.appendChild(p);
+						a.innerHTML += "their message: ";
+						a.appendChild(p);
+						if (j[i].theirComment != null) {
+							a.innerHTML += j[i].theirComment;
+						} else { a.innerHTML += "No Reply"; }
+						
+						c.innerHTML = "looking for: ";
+						c.appendChild(createList(j[i], "looking"));
+						c.innerHTML += "Offering: ";
+						c.appendChild(createList(j[i], "offering"));
+						
+						b.innerHTML = "date sent: ";
+						b.appendChild(p);
+						b.innerHTML += moment(j[i].date*1000).format("DD/MM/YY");
+						b.appendChild(p);
+						b.innerHTML += "status: ";
+						b.appendChild(p);
+						if (j[i].Status == "P") {
+							b.innerHTML += "Pending";
+						} else {
+							b.innerHTML += "Accepted";
+						}
+						
+						container.appendChild(a);
+						container.appendChild(b);
+						container.appendChild(c);
+						container.setAttribute("style", "background-color: #eeeeee; box-shadow: 0 0 1px 1px #888, 0 0 1px -1px #555;");
+						$("#accepted_id").append(container);
+		   			}
+		    	});
+	    	});
+ 		});
+ 	}
+ 	
+	function createList(j, type) {
+		var limit;
+		if (type == "looking") {
+			limit = j.offer;
+		} else {
+			limit = j.look;
+		}
+		console.log(limit);
+		var ret = document.createElement("ul");
+		for (var key in limit) {
+			if (limit.hasOwnProperty(key)) {
+				if (limit[key] == true) {
+					var a = document.createElement("li");
+					a.innerHTML = key;
+					ret.appendChild(a);
+				}
+				//console.log(key + " >>> " + limit[key]);
+			}
+		}
+		console.log(ret);
+		return ret;
+	}
+	</script>
 </html>

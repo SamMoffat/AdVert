@@ -34,7 +34,9 @@ public class GetMatches extends DatabaseConnect {
 
 	private static final int AGE_WEIGHTING = 5;			//x points are taken off of weight each day advert is up
 	private static final int DISTANCE_WEIGHTING = 10;	//x points are taken off per mile 
-	private static final double MATCHES_WEIGHTING = 5;	//x points denotes the difference in x and y in an exponent
+	private static final double MATCHES_WEIGHTING = 15;	//x points denotes the difference in x and y in an exponent
+	public static final double R_M = 3959.8731088; //Miles
+	public static final double R_K = 6372.8;	   //Kilometres
 	
 	@PostConstruct
 	protected void initialise() {
@@ -54,10 +56,10 @@ public class GetMatches extends DatabaseConnect {
 		try {
 			conn = getConnection();
 			String sql = String.format("SELECT users.name, users.user_id, users.area_id, adverts.date, adverts.longitude, adverts.latitude, lists.*, adverts.advert_id "
-					+ "FROM lists, adverts, users "
-					+ "WHERE users.user_id =\"%s\" "
-					+ "AND users.advert_id = adverts.advert_id "
-					+ "AND adverts.looking_list_id = lists.list_id;", id);
+									 + "FROM lists, adverts, users "
+									 + "WHERE users.user_id =\"%s\" "
+									 + "AND users.advert_id = adverts.advert_id "
+									 + "AND adverts.looking_list_id = lists.list_id;", id);
 			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery(sql);
 			userAd = getAd(rs);
@@ -80,7 +82,7 @@ public class GetMatches extends DatabaseConnect {
 			
 			for (AdvertWeights i : ads) {
 				long age =Instant.now().getEpochSecond() - i.getDate();
-				i.setWeighting(i.getWeighting() - age/(TimeUnit.DAYS.toSeconds(1)/DISTANCE_WEIGHTING));
+				i.setWeighting(i.getWeighting() - age/(TimeUnit.DAYS.toSeconds(1)/AGE_WEIGHTING));
 				long lookMatch = calcMatches(userAd.getLook(), i.getOffer());
 				long offrMatch = calcMatches(userAd.getOffer(), i.getLook());
 				i.setWeighting(i.getWeighting() + lookMatch + offrMatch);
@@ -92,16 +94,16 @@ public class GetMatches extends DatabaseConnect {
 			Gson ret = new Gson();
 			if (sort == null) {
 				Collections.sort(ads, new WeightingComparitor());
-			} else if (sort.equals("date")) {
+			} else if (sort.equals("Date")) {
 				Collections.sort(ads, new DateComparitor());
-			} else if (sort.equals("distance")) {
+			} else if (sort.equals("Proximity")) {
 				Collections.sort(ads, new DistanceComparitor());
 			} else {
 				Collections.sort(ads, new WeightingComparitor());
 			}
 			
 			limit += displace;
-			if (limit == 0 && ads.size()>=25) 	{ limit = 25; } 
+			if (limit == 0 && ads.size()>=2) 	{ limit = 2; } 
 			else if ( limit == 0 || limit > ads.size()) 	{ limit = ads.size(); }
 			if (displace > ads.size()) 			{ displace = ads.size(); }
 			String fnlRet = "[";
@@ -119,15 +121,19 @@ public class GetMatches extends DatabaseConnect {
 		return "{\"error\" : \"The query was unsuccessful, is the request correct?\"}";
 	}
 	private double calcMiles(double lon1, double lat1, double lon2, double lat2) {
-		double lat1Rad = Math.toRadians(lat1);
-		double lat2Rad = Math.toRadians(lat2);
-		double dLat = Math.toRadians(lat2 - lat1);
-		double dLon = Math.toRadians(lon2 - lon1);
 		
-		double a = Math.sin(dLat/2)  * Math.sin(dLat/2)  +
-				   Math.cos(lat1Rad) * Math.cos(lat2Rad) + 
-				   Math.sin(dLon/2)  * Math.sin(dLon/2);
-		return 2 * Math.atan2(a, 1-a);
+	        double dLat = Math.toRadians(lat2 - lat1);
+	        double dLon = Math.toRadians(lon2 - lon1);
+	        lat1 = Math.toRadians(lat1);
+	        lat2 = Math.toRadians(lat2);
+	 
+	        double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
+	        double c = 2 * Math.asin(Math.sqrt(a));
+	        return R_M * c;
+	   
+	}
+	public double testMiles(double a, double b, double c, double d) {
+		return calcMiles(a,b,c,d);
 	}
 
 	private long calcMatches(AdvertList usrLook, AdvertList OthOffr) {
