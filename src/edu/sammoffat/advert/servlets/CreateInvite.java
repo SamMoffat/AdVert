@@ -1,6 +1,5 @@
 package edu.sammoffat.advert.servlets;
 
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,9 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 
 @Path("/adverts/otherAdverts/{userid}/invite")
 public class CreateInvite extends DatabaseConnect {

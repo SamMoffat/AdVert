@@ -48,9 +48,10 @@ public class EditAdvert extends DatabaseConnect {
 				if (!comm.equals("")) {
 					addArea = "comment = \""+comm+"\",";
 				}
-				String lookRes = edtList(look, id, "look");
-				String offrRes = edtList(offer, id, "offer");
-
+				
+				edtList(look, id, "look");
+				edtList(offer, id, "offer");
+				
 				Connection conn = getConnection();
 				Statement st = conn.createStatement();
 				

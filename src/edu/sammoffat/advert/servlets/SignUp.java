@@ -8,9 +8,7 @@ import java.time.Instant;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 
 @Path("/SignUp")
 public class SignUp extends DatabaseConnect {

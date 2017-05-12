@@ -39,7 +39,6 @@ public class GetInvitations extends DatabaseConnect {
 			List<InvitationSent> inviteList = new ArrayList<InvitationSent>();
 			while (rs.next()) {
 				Statement sst = conn.createStatement();
-				String invAdId = rs.getString("invite_advert_id");
 				String recAdId = rs.getString("receive_advert_id");
 				InvitationSent toAdd = new InvitationSent();
 				AdvertList look = new AdvertList();
@@ -64,9 +63,9 @@ public class GetInvitations extends DatabaseConnect {
 				ResultSet rsLook = sst.executeQuery(String.format(sqlLook));
 				look = populateAdList(rsLook);
 				ResultSet rsOffr = sst.executeQuery(String.format("SELECT lists.* "
-														       + "FROM lists, adverts "
-														       + "WHERE lists.list_id = adverts.offering_list_id "
-														       + "AND adverts.advert_id = %s", recAdId));
+																+ "FROM lists, adverts "
+																+ "WHERE lists.list_id = adverts.offering_list_id "
+																+ "AND adverts.advert_id = %s", recAdId));
 				offr = populateAdList(rsOffr);
 				toAdd.setLook(look);
 				toAdd.setOffer(offr);
@@ -107,7 +106,6 @@ public class GetInvitations extends DatabaseConnect {
 			while (rs.next()) {
 				Statement sst = conn.createStatement();
 				String invAdId = rs.getString("invite_advert_id");
-				String recAdId = rs.getString("receive_advert_id");
 				Invitation toAdd = new Invitation();
 				AdvertList look = new AdvertList();
 				AdvertList offr = new AdvertList();
@@ -170,7 +168,6 @@ public class GetInvitations extends DatabaseConnect {
 			List<InvitationSent> inviteList = new ArrayList<InvitationSent>();
 			while (rs.next()) {
 				Statement sst = conn.createStatement();
-				String invAdId = rs.getString("invite_advert_id");
 				String recAdId = rs.getString("receive_advert_id");
 				InvitationSent toAdd = new InvitationSent();
 				AdvertList look = new AdvertList();

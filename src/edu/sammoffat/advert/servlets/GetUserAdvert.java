@@ -1,13 +1,11 @@
 package edu.sammoffat.advert.servlets;
 
-import java.awt.PageAttributes.MediaType;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -17,9 +15,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.UriInfo;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
@@ -50,8 +45,6 @@ public class GetUserAdvert extends DatabaseConnect {
 			ResultSet rsLook = st.executeQuery(String.format(sql, look));
 			String[] retLook = getList(rsLook);
 			Gson gson = new Gson();
-			String strLook = Arrays.toString(retLook);
-			String strOffr = Arrays.toString(retOffr);
 			String finalRet = String.format("{\"offer\" : %s, \"look\" : %s}", gson.toJson(retLook), gson.toJson(retOffr)); 
 			return finalRet;
 		} catch (Exception e) { e.printStackTrace(); }

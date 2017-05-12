@@ -19,9 +19,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriInfo;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.gson.Gson;
 
 import edu.sammoffat.advert.gsons.Advert;
